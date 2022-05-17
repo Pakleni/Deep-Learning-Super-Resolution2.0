@@ -1,38 +1,19 @@
-import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers, models
+from tensorflow.keras import layers
+
+from . import custom_layers
 
 
-def basic():
-    paddings = tf.constant([[0, 0], [1, 1], [1, 1], [0, 0]])
+def basic(frames=128):
 
-    Input_img = keras.Input(shape=(48, 48, 3))  # 48
+    Input_img = keras.Input(shape=(None, None, 3))
 
-    x = tf.pad(Input_img, paddings, "SYMMETRIC")  # 98
-    x = layers.Conv2D(512, (3, 3), activation="relu")(x)  # 96
+    x = custom_layers.basic_cluster(Input_img, frames)
 
-    x = tf.pad(x, paddings, "SYMMETRIC")  # 98
-    x = layers.Conv2D(512, (3, 3), activation="relu")(x)  # 96
+    x = layers.UpSampling2D(size=(2, 2))(x)
 
-    x = tf.pad(x, paddings, "SYMMETRIC")  # 98
-    x = layers.Conv2D(512, (3, 3), activation="relu")(x)  # 96
+    x = custom_layers.basic_cluster(x, frames // 2)
 
-    x = layers.Conv2D(256, (1, 1), activation="relu")(x)  # 96
+    decoded = custom_layers.padded_conv(x, 3, (3, 3), "sigmoid")
 
-    x = layers.UpSampling2D(size=(2, 2))(x)  # 96
-
-    x = tf.pad(x, paddings, "SYMMETRIC")  # 98
-    x = layers.Conv2D(256, (3, 3), activation="relu")(x)  # 96
-
-    x = tf.pad(x, paddings, "SYMMETRIC")  # 98
-    x = layers.Conv2D(256, (3, 3), activation="relu")(x)  # 96
-
-    x = tf.pad(x, paddings, "SYMMETRIC")  # 98
-    x = layers.Conv2D(256, (3, 3), activation="relu")(x)  # 96
-
-    x = tf.pad(x, paddings, "SYMMETRIC")  # 98
-    decoded = layers.Conv2D(3, (3, 3), activation="sigmoid")(x)  # 96
-
-    # model done
-    model = keras.Model(Input_img, decoded)
-    return model
+    return keras.Model(Input_img, decoded)

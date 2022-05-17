@@ -5,7 +5,7 @@ def test_train_gan():
     helpers.config(True)
 
     discriminator = models.discriminator()
-    generator = models.generator()
+    generator = models.basic()
 
     training_data = helpers.get_training_data(num=8)
 

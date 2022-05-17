@@ -84,19 +84,6 @@ def dataset_from_folder(input: str):
     return ds
 
 
-def transform_model_input_to_dynamic(model):
-    from tensorflow import keras
-
-    model.layers[0]._batch_input_shape = (None, None, None, 3)
-
-    new_model = keras.models.model_from_json(model.to_json())
-
-    for layer, new_layer in zip(model.layers, new_model.layers):
-        new_layer.set_weights(layer.get_weights())
-
-    return new_model
-
-
 def config(use_gpu: bool, vgg_problems: bool = False):
     import tensorflow as tf
 

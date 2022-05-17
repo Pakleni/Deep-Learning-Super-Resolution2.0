@@ -1,84 +1,39 @@
-import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers, models
+from tensorflow.keras import layers
+
+from . import custom_layers
 
 
-def unet():
-    paddings = tf.constant([[0, 0], [1, 1], [1, 1], [0, 0]])
+def unet(frames=128):
 
-    def basic_cluster(x, num):
-        x = tf.pad(x, paddings, "SYMMETRIC")
-        x = layers.Conv2D(num * 2, (3, 3), activation="relu")(x)
+    Input_img = keras.Input(shape=(None, None, 3))  # 48
 
-        x = tf.pad(x, paddings, "SYMMETRIC")
-        x = layers.Conv2D(num * 2, (3, 3), activation="relu")(x)
-
-        x = tf.pad(x, paddings, "SYMMETRIC")
-        x = layers.Conv2D(num * 2, (3, 3), activation="relu")(x)
-
-        x = layers.Conv2D(num, (1, 1), activation="relu")(x)
-
-        return x
-
-    def down(x, num):
-        x = tf.pad(x, paddings, "SYMMETRIC")
-        x = layers.Conv2D(num / 2, (3, 3), activation="relu")(x)
-
-        x = tf.pad(x, paddings, "SYMMETRIC")
-        x = layers.Conv2D(num / 2, (3, 3), activation="relu")(x)
-
-        x = tf.pad(x, paddings, "SYMMETRIC")
-        x = layers.Conv2D(num, (3, 3), activation="relu")(x)
-
-        return x
-
-    def up(x, num):
-        # x = layers.Conv2DTranspose(num, (2,2),strides=(2,2), activation = 'relu')(x)
-        x = layers.Conv2D(num, (1, 1), activation="relu")(x)  # 12
-        x = layers.UpSampling2D(size=(2, 2))(x)  # 96
-        return x
-
-    Input_img = keras.Input(shape=(48, 48, 3))  # 48
-
-    x1 = down(x=Input_img, num=64)
+    x1 = custom_layers.down(x=Input_img, frames=frames // 16)
 
     x2 = layers.MaxPooling2D((2, 2))(x1)  # 24
-
-    x2 = down(x=x2, num=128)
+    x2 = custom_layers.down(x=x2, frames=frames // 8)
 
     x3 = layers.MaxPooling2D((2, 2))(x2)  # 12
-
-    x3 = down(x=x3, num=256)
+    x3 = custom_layers.down(x=x3, frames=frames // 4)
 
     x4 = layers.MaxPooling2D((2, 2))(x3)  # 6
+    x4 = custom_layers.down(x=x4, frames=frames // 2)
 
-    x4 = down(x=x4, num=512)
+    x5 = custom_layers.up(frames=frames // 2, x=x4)  # 12
+    x5 = layers.Concatenate()([x3, x5])
+    x5 = custom_layers.basic_cluster(x=x5, frames=frames)
 
-    x7 = up(num=256, x=x4)  # 12
+    x6 = custom_layers.up(frames=frames // 4, x=x5)  # 24
+    x6 = layers.Concatenate()([x2, x6])
+    x6 = custom_layers.basic_cluster(x=x6, frames=frames // 2)
 
-    x7 = layers.Concatenate()([x3, x7])
+    x7 = custom_layers.up(frames=frames // 8, x=x6)  # 48
+    x7 = layers.Concatenate()([x1, x7])  # 48
+    x7 = custom_layers.basic_cluster(x=x7, frames=frames // 4)
 
-    x7 = basic_cluster(x=x7, num=256)
+    x8 = custom_layers.up(frames=frames // 16, x=x7)  # 96
+    x8 = custom_layers.basic_cluster(x=x8, frames=frames // 8)
 
-    x8 = up(num=128, x=x7)  # 24
+    decoded = custom_layers.padded_conv(x8, 3, (3, 3), activation="sigmoid")  # 96
 
-    x8 = layers.Concatenate()([x2, x8])
-
-    x8 = basic_cluster(x=x8, num=128)
-
-    x9 = up(num=64, x=x8)  # 48
-
-    x9 = layers.Concatenate()([x1, x9])  # 48
-
-    x9 = basic_cluster(x=x9, num=64)
-
-    x10 = up(num=32, x=x9)  # 96
-
-    x10 = basic_cluster(x=x10, num=32)
-
-    x11 = tf.pad(x10, paddings, "SYMMETRIC")  # 98
-    decoded = layers.Conv2D(3, (3, 3), activation="sigmoid")(x11)  # 96
-
-    # model done
-    model = keras.Model(Input_img, decoded)
-    return model
+    return keras.Model(Input_img, decoded)

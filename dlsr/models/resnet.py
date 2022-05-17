@@ -1,52 +1,32 @@
-import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers, models
+from tensorflow.keras import layers
+
+from . import custom_layers
 
 
-def resnet():
-    paddings = tf.constant([[0, 0], [1, 1], [1, 1], [0, 0]])
+def resnet(frames=64):
+    Input_img = keras.Input(shape=(None, None, 3))
 
-    def res(x, num):
+    x = custom_layers.padded_conv(Input_img, 64, (3, 3), activation="relu")
 
-        x_temp = x
+    x = custom_layers.res(x=x, frames=frames)
+    x = custom_layers.res(x=x, frames=frames)
+    x = custom_layers.res(x=x, frames=frames)
+    x = custom_layers.res(x=x, frames=frames)
+    x = custom_layers.res(x=x, frames=frames)
+    x = custom_layers.res(x=x, frames=frames)
 
-        x = tf.pad(x, paddings, "SYMMETRIC")
-        x = layers.Conv2D(num, (3, 3), activation="relu")(x)
+    x = layers.UpSampling2D(size=(2, 2))(x)
 
-        x = tf.pad(x, paddings, "SYMMETRIC")
-        x = layers.Conv2D(num, (3, 3), activation="relu")(x)
+    x = custom_layers.padded_conv(x, frames // 2, (1, 1), activation="relu")
 
-        x = layers.Add()([x, x_temp])
+    x = custom_layers.res(x=x, frames=frames // 2)
+    x = custom_layers.res(x=x, frames=frames // 2)
+    x = custom_layers.res(x=x, frames=frames // 2)
+    x = custom_layers.res(x=x, frames=frames // 2)
+    x = custom_layers.res(x=x, frames=frames // 2)
+    x = custom_layers.res(x=x, frames=frames // 2)
 
-        return x
+    decoded = custom_layers.padded_conv(x, 3, (3, 3), activation="sigmoid")
 
-    # input layer
-    Input_img = keras.Input(shape=(48, 48, 3))  # 48
-
-    x = tf.pad(Input_img, paddings, "SYMMETRIC")
-    x = layers.Conv2D(64, (3, 3), activation="relu")(x)
-
-    x = res(x=x, num=64)
-    x = res(x=x, num=64)
-    x = res(x=x, num=64)
-    x = res(x=x, num=64)
-    x = res(x=x, num=64)
-    x = res(x=x, num=64)
-
-    x = layers.UpSampling2D(size=(2, 2))(x)  # 96
-
-    x = layers.Conv2D(32, (1, 1), activation="relu")(x)
-
-    x = res(x=x, num=32)
-    x = res(x=x, num=32)
-    x = res(x=x, num=32)
-    x = res(x=x, num=32)
-    x = res(x=x, num=32)
-    x = res(x=x, num=32)
-
-    x = tf.pad(x, paddings, "SYMMETRIC")  # 98
-    decoded = layers.Conv2D(3, (3, 3), activation="sigmoid")(x)  # 96
-
-    # model done
-    model = keras.Model(Input_img, decoded)
-    return model
+    return keras.Model(Input_img, decoded)

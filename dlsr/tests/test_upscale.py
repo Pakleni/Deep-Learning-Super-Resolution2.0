@@ -13,7 +13,6 @@ def test_upscale_from_folder():
     model = tf.keras.models.load_model(
         "./saved-models/tests/model.h5", custom_objects=losses.get_custom_objects()
     )
-    model = helpers.transform_model_input_to_dynamic(model)
 
     ds = helpers.dataset_from_folder("input")
 
@@ -39,7 +38,6 @@ def test_upscale_with_validation_set():
     model = tf.keras.models.load_model(
         "./saved-models/tests/model.h5", custom_objects=losses.get_custom_objects()
     )
-    model = helpers.transform_model_input_to_dynamic(model)
 
     upscaled = upscale(model, lr.take(10))
 
@@ -61,7 +59,6 @@ def test_gan_upscale_from_folder():
         "./saved-models/tests/gan/generator.h5",
         custom_objects=losses.get_custom_objects(srgan),
     )
-    model = helpers.transform_model_input_to_dynamic(model)
 
     ds = helpers.dataset_from_folder("input")
 
