@@ -139,9 +139,3 @@ def train_gan(
         gen_history.extend(temp)
 
     return generator, gen_history, discriminator, dis_history
-
-
-if __name__ == "__main__":
-    from .tests import test_train_gan
-
-    test_train_gan()

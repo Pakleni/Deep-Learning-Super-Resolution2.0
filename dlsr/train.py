@@ -37,9 +37,3 @@ def train(
     )
 
     return model, history
-
-
-if __name__ == "__main__":
-    from .tests import test_train
-
-    test_train()

@@ -32,7 +32,3 @@ def discriminator():
     decoded = layers.Dense(units=1, activation="sigmoid")(x)
     model = keras.Model(Input_img, decoded)
     return model
-
-
-if __name__ == "__main__":
-    print(discriminator().summary())
