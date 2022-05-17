@@ -18,7 +18,7 @@ def test_train():
         n=1e-5,
     )
 
-    model.save("./saved-models/model.h5")
+    model.save("./saved-models/tests/model.h5")
     helpers.plot_history(history)
 
 
@@ -27,7 +27,7 @@ def test_train_from_file():
 
     helpers.config(True)
     model = tf.keras.models.load_model(
-        "./saved-models/model.h5", custom_objects=losses.get_custom_objects()
+        "./saved-models/tests/model.h5", custom_objects=losses.get_custom_objects()
     )
 
     training_data = helpers.get_training_data(num=15)
@@ -41,5 +41,5 @@ def test_train_from_file():
         n=1e-5,
     )
 
-    model.save("./saved-models/model.h5")
+    model.save("./saved-models/tests/model.h5")
     helpers.plot_history(history)

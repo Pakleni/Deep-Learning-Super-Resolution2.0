@@ -28,8 +28,8 @@ def test_train_gan():
         pre_train_loss_fn=losses.vgg_style_loss,
     )
 
-    generator.save("./saved-models/gan/generator.h5")
-    discriminator.save("./saved-models/gan/discriminator.h5")
+    generator.save("./saved-models/tests/gan/generator.h5")
+    discriminator.save("./saved-models/tests/gan/discriminator.h5")
 
     helpers.plot_history(gen_his)
     helpers.plot_history(dis_his)
