@@ -112,8 +112,7 @@ def train_gan(
             patience=generator_patience,
             n=generator_n,
         )
-
-    gen_history.extend(temp)
+        gen_history.extend(temp)
 
     for i in range(epochs):
         descriminator_data = get_discriminator_data(generator, training_data)
