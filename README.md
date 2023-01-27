@@ -4,15 +4,9 @@
 
 ---
 
-# Results for VGG Style Loss
+# Results for SRGAN with VGG54 Content loss
 
-### Graph showing Loss during 1000 epoch training
-
-![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/vgg_style/graph.png)
-
-# Results for SRGAN with VGG Style loss
-
-### Graphs showing when we got to Nash's equilibrium
+### Graphs showing training process
 
 ##### Graph for Generator
 
@@ -22,10 +16,6 @@
 
 ![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan_vgg/graph2.png)
 
-### Slideshow of training for each of 30 GAN training iterations (up until the equilibrium).
+### Other
 
-![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan_vgg/3.gif)
-![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan_vgg/1.gif)
-![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan_vgg/0.gif)
-![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan_vgg/4.gif)
-![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan_vgg/6.gif)
+Note: Python 3.10.5 was used

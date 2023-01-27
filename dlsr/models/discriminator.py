@@ -2,29 +2,40 @@ import tensorflow as tf
 from tensorflow import keras
 from keras import layers
 
-from . import custom_layers
+
+def block(filters, stride, kernel_size=3):
+    def run(x):
+        x = layers.Conv2D(
+            filters=filters, kernel_size=kernel_size, strides=stride, padding="same"
+        )(x)
+        x = layers.BatchNormalization()(x)
+        x = layers.LeakyReLU(alpha=0.2)(x)
+        return x
+
+    return run
 
 
-def discriminator(frames=128, image_size=96):
+def discriminator(image_size=96):
+
     Input_img = keras.Input(shape=(image_size, image_size, 3))
 
     x = Input_img
-    for i in range(6):
-        x = custom_layers.padded_conv(x, frames, (3, 3), activation="relu")
 
-    x = layers.LeakyReLU()(x)
+    x = layers.Conv2D(filters=64, kernel_size=3, padding="same")(x)
+    x = layers.LeakyReLU(alpha=0.2)(x)
 
-    for i in range(4):
-        x = custom_layers.padded_conv(x, frames // 2, (3, 3), activation="relu")
-
-    x = layers.LeakyReLU()(x)
-
-    for i in range(2):
-        x = custom_layers.padded_conv(x, frames // 4, (3, 3), activation="relu")
-
-    x = layers.LeakyReLU()(x)
+    x = block(64, 2)(x)
+    x = block(128, 1)(x)
+    x = block(128, 2)(x)
+    x = block(256, 1)(x)
+    x = block(256, 2)(x)
+    x = block(512, 1)(x)
+    x = block(512, 2)(x)
 
     x = layers.Flatten()(x)
+
+    x = layers.Dense(units=1024)(x)
+    x = layers.LeakyReLU(alpha=0.2)(x)
 
     decoded = layers.Dense(units=1, activation="sigmoid")(x)
     model = keras.Model(Input_img, decoded)

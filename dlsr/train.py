@@ -11,7 +11,7 @@ def train(
     batch_size: int,
     epochs: int,
     n: float,
-    patience: int,
+    patience: int | None = None,
     loss_fn: tf.keras.losses.Loss = losses.ssim_loss,
     metrics=["accuracy", losses.ssim_loss],
 ):
@@ -21,9 +21,13 @@ def train(
     model.compile(optimizer=optimizer, loss=loss_fn, metrics=metrics)
 
     monitor = "val_loss"
-    early_stopping = tf.keras.callbacks.EarlyStopping(
-        patience=patience, monitor=monitor, restore_best_weights=True
-    )
+
+    callbacks = []
+    if patience != None:
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            patience=patience, monitor=monitor, restore_best_weights=True
+        )
+        callbacks.append(early_stopping)
 
     the_lr_tr, the_hr_tr, the_lr_vl, the_hr_vl = training_data
 
@@ -33,7 +37,7 @@ def train(
         batch_size=batch_size,
         epochs=epochs,
         validation_data=(the_lr_vl, the_hr_vl),
-        callbacks=[early_stopping],
+        callbacks=callbacks,
     )
 
-    return model, history
+    return history

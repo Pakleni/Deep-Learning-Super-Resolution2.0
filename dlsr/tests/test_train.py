@@ -6,7 +6,7 @@ def test_train():
 
     training_data = helpers.get_training_data(num=15)
 
-    model, history = train(
+    history = train(
         model,
         training_data,
         batch_size=15,
@@ -29,7 +29,7 @@ def test_train_from_file():
 
     training_data = helpers.get_training_data(num=15)
 
-    model, history = train(
+    history = train(
         model,
         training_data,
         batch_size=15,

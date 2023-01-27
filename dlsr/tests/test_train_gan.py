@@ -7,7 +7,7 @@ def test_train_gan():
 
     training_data = helpers.get_training_data(num=8)
 
-    generator, gen_his, discriminator, dis_his = train_gan(
+    gen_his, dis_his = train_gan(
         discriminator=discriminator,
         generator=generator,
         training_data=training_data,
@@ -17,7 +17,7 @@ def test_train_gan():
         discriminator_batch_size=8,
         discriminator_n=1e-6,
         generator_epochs=3,
-        generator_loss_fn=losses.get_srgan_loss(discriminator)["srgan_vgg_loss"],
+        generator_loss_fn=losses.get_srgan_loss(discriminator)["srgan_loss"],
         generator_patience=1,
         generator_batch_size=8,
         generator_n=1e-6,

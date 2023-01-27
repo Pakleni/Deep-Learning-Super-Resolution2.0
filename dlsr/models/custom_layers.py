@@ -2,18 +2,19 @@ import tensorflow as tf
 from keras import layers
 
 
-def padded_conv(x, frames, size, activation):
+def padded_conv(x, frames, size, activation=None, strides=(1, 1)):
     if not padded_conv.paddings:
         padded_conv.paddings = {
             (3, 3): tf.constant([[0, 0], [1, 1], [1, 1], [0, 0]]),
             (5, 5): tf.constant([[0, 0], [2, 2], [2, 2], [0, 0]]),
             (7, 7): tf.constant([[0, 0], [3, 3], [3, 3], [0, 0]]),
+            (9, 9): tf.constant([[0, 0], [4, 4], [4, 4], [0, 0]]),
         }
 
     if size != (1, 1):
         x = tf.pad(x, padded_conv.paddings[size], "SYMMETRIC")
 
-    x = layers.Conv2D(frames, size, activation=activation)(x)
+    x = layers.Conv2D(frames, size, strides=strides, activation=activation)(x)
     return x
 
 
