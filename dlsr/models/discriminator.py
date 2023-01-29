@@ -1,9 +1,8 @@
-import tensorflow as tf
 from tensorflow import keras
 from keras import layers
 
 
-def block(filters, stride, kernel_size=3):
+def conv(filters, stride, kernel_size=3):
     def run(x):
         x = layers.Conv2D(
             filters=filters, kernel_size=kernel_size, strides=stride, padding="same"
@@ -15,7 +14,7 @@ def block(filters, stride, kernel_size=3):
     return run
 
 
-def discriminator(image_size=96):
+def discriminator(image_size):
 
     Input_img = keras.Input(shape=(image_size, image_size, 3))
 
@@ -24,13 +23,13 @@ def discriminator(image_size=96):
     x = layers.Conv2D(filters=64, kernel_size=3, padding="same")(x)
     x = layers.LeakyReLU(alpha=0.2)(x)
 
-    x = block(64, 2)(x)
-    x = block(128, 1)(x)
-    x = block(128, 2)(x)
-    x = block(256, 1)(x)
-    x = block(256, 2)(x)
-    x = block(512, 1)(x)
-    x = block(512, 2)(x)
+    x = conv(64, 2)(x)
+    x = conv(128, 1)(x)
+    x = conv(128, 2)(x)
+    x = conv(256, 1)(x)
+    x = conv(256, 2)(x)
+    x = conv(512, 1)(x)
+    x = conv(512, 2)(x)
 
     x = layers.Flatten()(x)
 

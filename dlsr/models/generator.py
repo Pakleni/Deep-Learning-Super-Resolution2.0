@@ -24,9 +24,10 @@ def res():
     return run
 
 
-def generator(image_size=None, B=16):
+# B = 16 is used in the SRGAN folder
+def generator(B=16):
 
-    Input_img = keras.Input(shape=(image_size, image_size, 3))
+    Input_img = keras.Input(shape=(None, None, 3))
     x = Input_img
 
     x = layers.Conv2D(filters=64, kernel_size=9, strides=1, padding="same")(x)

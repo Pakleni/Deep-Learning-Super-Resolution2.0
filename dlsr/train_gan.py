@@ -27,21 +27,44 @@ def get_discriminator_data(
     generator: tf.keras.Model,
     training_data: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
     real_data: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
+    batch_size: int,
 ):
     lr_train, hr_train, lr_val, hr_val = training_data
 
     train_length = np.shape(lr_train)[0]
     val_length = np.shape(lr_val)[0]
 
-    # fake
-    fake_train_x = np.array(generator.predict(lr_train, verbose=0))
-    fake_train_y = np.array([0 for i in range(train_length)])
+    # split lr_train into batches of batch_size
+    train_split_length = train_length // batch_size
+    val_split_length = val_length // batch_size
 
-    fake_valid_x = np.array(generator.predict(lr_val, verbose=0))
+    lr_train = np.array_split(lr_train, train_split_length)
+    lr_val = np.array_split(lr_val, val_split_length)
+
+    # generate fake data
+    for i in range(train_split_length):
+        if i == 0:
+            fake_train_x = generator(lr_train[i], training=False)
+        else:
+            fake_train_x = np.concatenate(
+                (fake_train_x, generator(lr_train[i], training=False))
+            )
+
+    for i in range(val_split_length):
+        if i == 0:
+            fake_valid_x = generator(lr_val[i], training=False)
+        else:
+            fake_valid_x = np.concatenate(
+                (fake_valid_x, generator(lr_val[i], training=False))
+            )
+
+    fake_train_y = np.array([0 for i in range(train_length)])
     fake_valid_y = np.array([0 for i in range(val_length)])
 
+    # extract real data
     real_train_x, real_train_y, real_valid_x, real_valid_y = real_data
 
+    # combine real and fake data
     train_x = np.concatenate((fake_train_x, real_train_x))
     train_y = np.concatenate((fake_train_y, real_train_y))
     valid_x = np.concatenate((fake_valid_x, real_valid_x))
@@ -110,7 +133,7 @@ def train_gan(
     generator.compile(
         optimizer=gen_optimizer,
         loss=generator_loss_fn,
-        metrics=["accuracy", losses.ssim_loss, generator_loss_fn],
+        metrics=["accuracy", losses.ssim, generator_loss_fn],
     )
 
     for i in range(epochs):
@@ -120,7 +143,7 @@ def train_gan(
         print(f"GAN Epoch {i+1}/{epochs}")
 
         train_x, train_y, valid_x, valid_y = get_discriminator_data(
-            generator, training_data, real_data
+            generator, training_data, real_data, generator_batch_size
         )
 
         temp = discriminator.fit(
@@ -131,7 +154,6 @@ def train_gan(
             initial_epoch=i * discriminator_epochs,
             validation_data=(valid_x, valid_y),
         )
-
         dis_history.extend(temp)
 
         temp = generator.fit(
@@ -142,7 +164,6 @@ def train_gan(
             initial_epoch=i * generator_epochs,
             validation_data=(lr_vl, hr_vl),
         )
-
         gen_history.extend(temp)
 
     return gen_history, dis_history

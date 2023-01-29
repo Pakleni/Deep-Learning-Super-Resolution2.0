@@ -11,7 +11,7 @@ def download_archive(file, target_dir, extract=True):
     os.remove(os.path.join(target_dir, file))
 
 
-def crop(lr_img, hr_img, hr_crop_size=96, scale=2):
+def crop(lr_img, hr_img, hr_crop_size, scale):
 
     lr_crop_size = hr_crop_size // scale
 
@@ -27,7 +27,7 @@ def crop(lr_img, hr_img, hr_crop_size=96, scale=2):
     return lr_img_cropped, hr_img_cropped
 
 
-def random_crop(lr_img, hr_img, hr_crop_size=96, scale=2):
+def random_crop(lr_img, hr_img, hr_crop_size, scale):
 
     lr_crop_size = hr_crop_size // scale
     lr_img_shape = tf.shape(lr_img)[:2]
@@ -69,11 +69,11 @@ class DIV2K:
 
     def dataset(
         self,
-        batch_size=16,
+        batch_size,
+        image_size,
         repeat_count=None,
         random_transform=True,
         crop_images=False,
-        image_size=96,
     ):
         ds = tf.data.Dataset.zip((self.lr_dataset(), self.hr_dataset()))
         if random_transform:

@@ -10,11 +10,11 @@
 
 ##### Graph for Generator
 
-![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan_vgg/graph1.png)
+![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan/graph1.png)
 
 ##### Graph for Discriminator
 
-![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan_vgg/graph2.png)
+![](https://github.com/Pakleni/Deep-Learning-Super-Resolution2.0/blob/main/results/srgan/graph2.png)
 
 ### Other
 

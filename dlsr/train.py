@@ -12,8 +12,8 @@ def train(
     epochs: int,
     n: float,
     patience: int | None = None,
-    loss_fn: tf.keras.losses.Loss = losses.ssim_loss,
-    metrics=["accuracy", losses.ssim_loss],
+    loss_fn: tf.keras.losses.Loss = losses.ssim,
+    metrics=["accuracy", losses.ssim],
 ):
 
     optimizer = keras.optimizers.Adam(learning_rate=n)

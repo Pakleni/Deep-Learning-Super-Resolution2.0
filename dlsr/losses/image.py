@@ -4,12 +4,12 @@ from keras import backend as K
 from .. import helpers
 
 
-def ssim_loss(y_true, y_pred):
-    return 1 - tf.reduce_mean(tf.image.ssim(y_true, y_pred, helpers.norm(255)))
+def ssim(y_true, y_pred):
+    return 1 - tf.reduce_mean(tf.image.ssim(y_true, y_pred, helpers.normalize(255)))
 
 
-def psnr_loss(y_true, y_pred):
-    max_pixel = helpers.norm(255)
+def psnr_mse(y_true, y_pred):
+    max_pixel = helpers.normalize(255)
     return (
         -(
             10.0
@@ -21,8 +21,8 @@ def psnr_loss(y_true, y_pred):
     )
 
 
-def psnr_abs_loss(y_true, y_pred):
-    max_pixel = helpers.norm(255)
+def psnr_mae(y_true, y_pred):
+    max_pixel = helpers.normalize(255)
     return (
         -(
             10.0

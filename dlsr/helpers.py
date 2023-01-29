@@ -1,12 +1,11 @@
-import sys
 import dlsr.losses
 
 
-def norm(x):
+def normalize(x):
     return x / 255
 
 
-def denorm(x):
+def denormalize(x):
     return (x * 255).astype("int32")
 
 
@@ -24,8 +23,8 @@ def plot_history(history):
 def load_dataset(
     num: int,
     type: str,
+    image_size,
     random_transform: bool = True,
-    image_size=96,
 ):
     import numpy as np
     from .data import DIV2K
@@ -43,8 +42,8 @@ def load_dataset(
     for x in ds.take(num):
         i += 1
         print(f"Loading {i}/{num}", end="\r", flush=True)
-        lr.extend([norm(x[0][0])])
-        hr.extend([norm(x[1][0])])
+        lr.extend([normalize(x[0][0])])
+        hr.extend([normalize(x[1][0])])
 
     lr = np.array(lr)
     hr = np.array(hr)
@@ -53,13 +52,11 @@ def load_dataset(
 
 
 def get_training_data(
-    num: int = 3200,
-    valid_num: int = 100,
+    num: int,
+    valid_num: int,
+    image_size,
     random_transform: bool = True,
-    image_size=96,
 ):
-    dlsr.losses.vgg.set_image_size(size=image_size)
-
     print("loading validation...")
     the_lr_vl, the_hr_vl = load_dataset(
         num=valid_num,
