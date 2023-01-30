@@ -2,18 +2,18 @@ import tensorflow as tf
 import numpy as np
 from tensorflow import keras
 
-from . import losses
+from .helpers import History
 
 
 def train(
     model: tf.keras.Model,
-    training_data: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
-    batch_size: int,
+    training_data: tuple[tf.data.Dataset, tf.data.Dataset],
     epochs: int,
     n: float,
+    loss_fn: tf.keras.losses.Loss,
     patience: int | None = None,
-    loss_fn: tf.keras.losses.Loss = losses.ssim,
-    metrics=["accuracy", losses.ssim],
+    metrics=["accuracy"],
+    history: History | None = None,
 ):
 
     optimizer = keras.optimizers.Adam(learning_rate=n)
@@ -29,15 +29,14 @@ def train(
         )
         callbacks.append(early_stopping)
 
-    the_lr_tr, the_hr_tr, the_lr_vl, the_hr_vl = training_data
+    training, validation = training_data
 
-    history = model.fit(
-        x=the_lr_tr,
-        y=the_hr_tr,
-        batch_size=batch_size,
+    temp = model.fit(
+        x=training,
         epochs=epochs,
-        validation_data=(the_lr_vl, the_hr_vl),
+        validation_data=validation,
         callbacks=callbacks,
     )
 
-    return history
+    if history:
+        history.extend(temp)

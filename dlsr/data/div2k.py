@@ -63,9 +63,12 @@ def random_rotate(lr_img, hr_img):
 
 
 class DIV2K:
-    def __init__(self, type="train"):
+    def __init__(self, type="train", scale=2):
         self.dir = ""
         self.type = type
+        if scale not in [2, 3, 4]:
+            raise ValueError("Scale should be 2, 3 or 4")
+        self.scale = scale
 
     def dataset(
         self,
@@ -74,22 +77,30 @@ class DIV2K:
         repeat_count=None,
         random_transform=True,
         crop_images=False,
-    ):
+        modifier=None,
+    ) -> tf.data.Dataset:
         ds = tf.data.Dataset.zip((self.lr_dataset(), self.hr_dataset()))
+
+        ds = ds.repeat(repeat_count)
+
         if random_transform:
             ds = ds.map(
-                lambda lr, hr: random_crop(lr, hr, scale=2, hr_crop_size=image_size),
+                lambda lr, hr: random_crop(
+                    lr, hr, scale=self.scale, hr_crop_size=image_size
+                ),
                 num_parallel_calls=AUTOTUNE,
             )
             ds = ds.map(random_rotate, num_parallel_calls=AUTOTUNE)
             ds = ds.map(random_flip, num_parallel_calls=AUTOTUNE)
         elif crop_images:
             ds = ds.map(
-                lambda lr, hr: crop(lr, hr, scale=2, hr_crop_size=image_size),
+                lambda lr, hr: crop(lr, hr, scale=self.scale, hr_crop_size=image_size),
                 num_parallel_calls=AUTOTUNE,
             )
+        if modifier:
+            ds = ds.map(modifier, num_parallel_calls=AUTOTUNE)
+
         ds = ds.batch(batch_size, num_parallel_calls=AUTOTUNE)
-        ds = ds.repeat(repeat_count)
         ds = ds.prefetch(buffer_size=AUTOTUNE)
         return ds
 
@@ -99,8 +110,7 @@ class DIV2K:
 
         ds = self._images_dataset(self._hr_image_files())
 
-        # you can turn on caching here
-        # ds = ds.cache()
+        ds = ds.cache()
 
         return ds
 
@@ -109,6 +119,8 @@ class DIV2K:
             download_archive(self._lr_images_archive(), self.dir, extract=True)
 
         ds = self._images_dataset(self._lr_image_files())
+
+        ds = ds.cache()
 
         return ds
 
@@ -130,13 +142,13 @@ class DIV2K:
         return os.path.join(self.dir, f"DIV2K_{self.type}_HR")
 
     def _lr_images_dir(self):
-        return os.path.join(self.dir, f"DIV2K_{self.type}_LR_bicubic", "X2")
+        return os.path.join(self.dir, f"DIV2K_{self.type}_LR_bicubic", f"X{self.scale}")
 
     def _hr_images_archive(self):
         return f"DIV2K_{self.type}_HR.zip"
 
     def _lr_images_archive(self):
-        return f"DIV2K_{self.type}_LR_bicubic_X2.zip"
+        return f"DIV2K_{self.type}_LR_bicubic_X{self.scale}.zip"
 
     @staticmethod
     def _images_dataset(image_files):

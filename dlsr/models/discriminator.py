@@ -14,7 +14,7 @@ def conv(filters, stride, kernel_size=3):
     return run
 
 
-def discriminator(image_size):
+def discriminator(image_size) -> keras.models.Model:
 
     Input_img = keras.Input(shape=(image_size, image_size, 3))
 

@@ -1,88 +1,100 @@
-import dlsr.losses
+import tensorflow as tf
+import matplotlib.pyplot as plt
+from .data import DIV2K
+import os
+import tensorflow as tf
+from tensorflow.python.data.experimental import AUTOTUNE
 
-
-def normalize(x):
+# normalize low resolution images to [0,1]
+def normalize_lr(x):
     return x / 255
 
 
-def denormalize(x):
-    return (x * 255).astype("int32")
+# normalize high resolution images to [-1,1]
+def normalize_hr(x):
+    val = 255 / 2
+    return (tf.cast(x, tf.float32) - val) / val
 
 
-def plot_history(history):
-    import matplotlib.pyplot as plt
+# denormalize high resolution images to [0,255]
+def denormalize_hr(x):
+    val = 255 / 2
+    adjusted = x * val + val
+    clipped = tf.clip_by_value(adjusted, 0, 255)
+    return tf.cast(tf.math.round(clipped), tf.uint8)
 
-    plt.plot(history.history["loss"], label="loss")
-    plt.plot(history.history["val_loss"], label="val_loss")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.legend(loc="lower right")
-    plt.show()
+
+class History:
+    def __init__(self, params: list = ["val_loss", "loss"]):
+        self.params = params
+        self.history = {param: [] for param in params}
+
+    def extend(self, x: tf.keras.callbacks.History):
+        for param in self.params:
+            self.history[param].extend(x.history[param])
+
+    def plot(
+        self,
+        map: dict = {
+            "val_loss": "Validation Loss",
+            "loss": "Loss",
+        },
+    ):
+        for param in map:
+            plt.plot(self.history[param], label=map[param])
+
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.legend(loc="lower right")
+        plt.show()
 
 
 def load_dataset(
-    num: int,
     type: str,
     image_size,
+    batch_size: int = 1,
     random_transform: bool = True,
+    repeat_count=None,
+    scale=2,
 ):
-    import numpy as np
-    from .data import DIV2K
-
-    loader = DIV2K(type=type)
-    ds = loader.dataset(
-        batch_size=1, random_transform=random_transform, image_size=image_size
+    loader = DIV2K(type=type, scale=scale)
+    return loader.dataset(
+        batch_size=batch_size,
+        random_transform=random_transform,
+        image_size=image_size,
+        modifier=lambda lr, hr: (normalize_lr(lr), normalize_hr(hr)),
+        repeat_count=repeat_count,
     )
-
-    lr = []
-    hr = []
-
-    i = 0
-
-    for x in ds.take(num):
-        i += 1
-        print(f"Loading {i}/{num}", end="\r", flush=True)
-        lr.extend([normalize(x[0][0])])
-        hr.extend([normalize(x[1][0])])
-
-    lr = np.array(lr)
-    hr = np.array(hr)
-
-    return lr, hr
 
 
 def get_training_data(
-    num: int,
-    valid_num: int,
     image_size,
     random_transform: bool = True,
-):
-    print("loading validation...")
-    the_lr_vl, the_hr_vl = load_dataset(
-        num=valid_num,
+    batch_size: int = 1,
+    repeat_count=None,
+    scale=2,
+) -> tuple[tf.data.Dataset, tf.data.Dataset]:
+    valiation_dataset = load_dataset(
         type="valid",
         random_transform=random_transform,
+        repeat_count=1,
         image_size=image_size,
+        batch_size=batch_size,
+        scale=scale,
     )
-    print("finished loading validation")
-
-    print("loading training...")
-    the_lr_tr, the_hr_tr = load_dataset(
-        num=num,
+    training_dataset = load_dataset(
         type="train",
         random_transform=random_transform,
+        repeat_count=repeat_count,
         image_size=image_size,
+        batch_size=batch_size,
+        scale=scale,
     )
-    print("finished loading training")
 
-    return the_lr_tr, the_hr_tr, the_lr_vl, the_hr_vl
+    return training_dataset, valiation_dataset
 
 
 def dataset_from_folder(input: str):
-    import os
-    import tensorflow as tf
-    from tensorflow.python.data.experimental import AUTOTUNE
-
     images_dir = os.path.join(input)
     image_files = [
         os.path.join(images_dir, filename)
@@ -92,18 +104,15 @@ def dataset_from_folder(input: str):
     ds = tf.data.Dataset.from_tensor_slices(image_files)
     ds = ds.map(tf.io.read_file)
     ds = ds.map(
-        lambda x: tf.image.decode_png(x, channels=3), num_parallel_calls=AUTOTUNE
+        lambda x: tf.io.decode_image(x, channels=3), num_parallel_calls=AUTOTUNE
     )
     ds = ds.batch(1)
 
     return ds
 
 
-def config(use_gpu: bool, vgg_problems: bool = False):
-    import tensorflow as tf
-
-    if vgg_problems:
-        tf.config.experimental_run_functions_eagerly(True)
+def config(use_gpu: bool, eager: bool = False):
+    if eager:
         tf.config.run_functions_eagerly(True)
     if use_gpu:
         gpus = tf.config.list_physical_devices("GPU")

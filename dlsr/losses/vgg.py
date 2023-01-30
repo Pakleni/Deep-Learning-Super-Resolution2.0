@@ -3,17 +3,10 @@ from tensorflow import keras
 from keras.applications.vgg19 import VGG19, preprocess_input
 
 
-def set_image_size(size):
-    if size < 32:
-        raise "Size cannot be lower than 32 pixels"
-    global image_size
-    image_size = size
-    vgg_style.model = None
-    vgg_content.model = None
+class StyleLoss(keras.losses.Loss):
+    def __init__(self, image_size, name="style_loss"):
+        super().__init__(name=name)
 
-
-def vgg_style(X, Y):
-    if not vgg_style.model:
         vgg_model = VGG19(include_top=False, input_shape=(image_size, image_size, 3))
         vgg_model.trainable = False
 
@@ -24,34 +17,47 @@ def vgg_style(X, Y):
             vgg_model.get_layer(name=f"block{i[0]}_conv{i[1]}").output
             for i in layerNames
         ]
-        vgg_style.model = keras.Model(Xx, Yy)
+        self.model = keras.Model(Xx, Yy)
 
-    Xt = preprocess_input(X * 255)
-    Yt = preprocess_input(Y * 255)
+    def process(self, x):
+        x = x * 127.5 + 127.5
+        x = preprocess_input(x)
+        x = self.model(x, training=False)
+        return x
 
-    vggX = vgg_style.model(Xt)
-    vggY = vgg_style.model(Yt)
+    def call(self, y_true, y_pred):
+        vggX = self.process(y_true)
+        vggY = self.process(y_pred)
 
-    ret = 0
-    for x, y in zip(vggX, vggY):
-        ret += tf.reduce_mean(tf.square(x - y))
+        layers = len(self.model.output_shape)
+        total = 0
+        for x, y in zip(vggX, vggY):
+            total += tf.reduce_mean(tf.square(x - y), axis=[1, 2, 3])
 
-    return ret / len(vggX)
+        return total / layers
 
 
-def vgg_content(X, Y):
-    if not vgg_content.model:
+class ContentLoss(keras.losses.Loss):
+    def __init__(self, image_size, name="content_loss"):
+        super().__init__(name=name)
+
         vgg_model = VGG19(include_top=False, input_shape=(image_size, image_size, 3))
         vgg_model.trainable = False
 
         Xx = vgg_model.input
         Yy = vgg_model.get_layer(name=f"block5_conv4").output
-        vgg_content.model = keras.models.Model(Xx, Yy)
+        self.model = keras.models.Model(Xx, Yy)
 
-    Xt = preprocess_input(X * 255)
-    Yt = preprocess_input(Y * 255)
+    def process(self, x):
+        x = x * 127.5 + 127.5
+        x = preprocess_input(x)
+        x = self.model(x, training=False)
+        return x
 
-    vggX = vgg_content.model(Xt)
-    vggY = vgg_content.model(Yt)
+    def call(self, y_true, y_pred):
+        vggX = self.process(y_true)
+        vggY = self.process(y_pred)
 
-    return tf.reduce_mean(tf.square(vggY - vggX))
+        return tf.reduce_sum(tf.square(vggY - vggX), axis=[1, 2]) / (
+            self.model.output_shape[1] * self.model.output_shape[2]
+        )
