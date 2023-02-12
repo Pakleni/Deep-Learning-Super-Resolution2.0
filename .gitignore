@@ -3,6 +3,7 @@ __pycache__/
 /DIV2K_train_LR_bicubic
 /DIV2K_valid_HR
 /DIV2K_valid_LR_bicubic
+/Set14
 /saved-models
 /.vscode
 /input
