@@ -20,45 +20,53 @@ The dataset I used was DIV2K and the code for loading the dataset can be found a
 
 ---
 
-## 4x Upscaling images, Validation Set
+## 4x Upscaling images
 
-### Low Resolution
+### Validation Set
 
-<img src="results/comparison4x/lr/image6.png" height="300px"/>
-<img src="results/comparison4x/lr/image1.png" height="300px"/>
-<img src="results/comparison4x/lr/image3.png" height="300px"/>
+<table>
+  <th>Low Resolution</th>
+  <th>SRResNet 4x</th>
+  <th>SRGAN 4x</th>
+  <tr>
+    <td><img src="results/comparison4x/lr/image6.png" width="300px"/></td>
+    <td><img src="results/comparison4x/srres4x/image6.png" width="300px"/></td>
+    <td><img src="results/comparison4x/srgan4x/image6.png" width="300px"/></td>
+  </tr>
+  <tr>
+    <td><img src="results/comparison4x/lr/image1.png" width="300px"/></td>
+    <td><img src="results/comparison4x/srres4x/image1.png" width="300px"/></td>
+    <td><img src="results/comparison4x/srgan4x/image1.png" width="300px"/></td>
+  </tr>
+  <tr>
+    <td><img src="results/comparison4x/lr/image3.png" width="300px"/></td>
+    <td><img src="results/comparison4x/srres4x/image3.png" width="300px"/></td>
+    <td><img src="results/comparison4x/srgan4x/image3.png" width="300px"/></td>
+  </tr>
+<table>
 
-### SRResNet 4x
+### Set14
 
-<img src="results/comparison4x/srres4x/image6.png" height="300px"/>
-<img src="results/comparison4x/srres4x/image1.png" height="300px"/>
-<img src="results/comparison4x/srres4x/image3.png" height="300px"/>
-
-### SRGAN 4x
-
-<img src="results/comparison4x/srgan4x/image6.png" height="300px"/>
-<img src="results/comparison4x/srgan4x/image1.png" height="300px"/>
-<img src="results/comparison4x/srgan4x/image3.png" height="300px"/>
-
-## 4x Upscaling images, Set14
-
-### Low Resolution
-
-<img src="results/set14/lr/image6.png" height="300px"/>
-<img src="results/set14/lr/image1.png" height="300px"/>
-<img src="results/set14/lr/image3.png" height="300px"/>
-
-### SRResNet 4x
-
-<img src="results/set14/srres4x/image6.png" height="300px"/>
-<img src="results/set14/srres4x/image1.png" height="300px"/>
-<img src="results/set14/srres4x/image3.png" height="300px"/>
-
-### SRGAN 4x
-
-<img src="results/set14/srgan4x/image6.png" height="300px"/>
-<img src="results/set14/srgan4x/image1.png" height="300px"/>
-<img src="results/set14/srgan4x/image3.png" height="300px"/>
+<table>
+  <th>Low Resolution</th>
+  <th>SRResNet 4x</th>
+  <th>SRGAN 4x</th>
+  <tr>
+    <td><img src="results/set14/lr/image0.png" width="300px"/></td>
+    <td><img src="results/set14/srres4x/image0.png" width="300px"/></td>
+    <td><img src="results/set14/srgan4x/image0.png" width="300px"/></td>
+  </tr>
+  <tr>
+    <td><img src="results/set14/lr/image6.png" width="300px"/></td>
+    <td><img src="results/set14/srres4x/image6.png" width="300px"/></td>
+    <td><img src="results/set14/srgan4x/image6.png" width="300px"/></td>
+  </tr>
+  <tr>
+    <td><img src="results/set14/lr/image4.png" width="300px"/></td>
+    <td><img src="results/set14/srres4x/image4.png" width="300px"/></td>
+    <td><img src="results/set14/srgan4x/image4.png" width="300px"/></td>
+  </tr>
+<table>
 
 ### Other
 
